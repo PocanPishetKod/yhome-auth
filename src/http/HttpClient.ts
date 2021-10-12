@@ -1,9 +1,7 @@
 export class HttpClient {
     public async get(url: string): Promise<void> {
         let result = await fetch(url);
-        if (!result.ok) {
-            console.log(result);
-        }
+        console.log(result);
     }
 
     public async postForm(url: string, formData: FormData): Promise<any> {
