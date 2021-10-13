@@ -10,8 +10,8 @@ export class AuthServerApi {
 
     constructor(authConfiguration: AuthConfiguration) {
         this._httpClient = new HttpClient();
-        this._authorizeEndpoint = `${authConfiguration.authirity}/connect/authorize`;
-        this._tokenEndpoint = `${authConfiguration.authirity}/connect/token`;
+        this._authorizeEndpoint = `${authConfiguration.authority}/connect/authorize`;
+        this._tokenEndpoint = `${authConfiguration.authority}/connect/token`;
     }
 
     private buildGetCodeUrl(state: string, codeChallenge: string): string {

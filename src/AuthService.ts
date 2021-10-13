@@ -1,5 +1,6 @@
 import { AuthServerApi } from "./AuthServerApi";
 import { AuthContextStorage } from "./data/AuthContextStorage";
+import { TokenStorage } from "./data/TokenStorage";
 import { PkceGenerator } from "./generators/PkceGenerator";
 import { StateGenerator } from "./generators/StateGenerator";
 import { AuthConfiguration } from "./models/AuthConfiguration";
@@ -11,6 +12,7 @@ export class AuthService {
     private readonly _pkceGenerator: PkceGenerator;
     private readonly _authServerApi: AuthServerApi;
     private readonly _authContextStorage: AuthContextStorage;
+    private readonly _tokenStorage: TokenStorage;
 
     constructor(authtConfiguration: AuthConfiguration) {
         this._authConfiguration = authtConfiguration;
@@ -18,6 +20,7 @@ export class AuthService {
         this._pkceGenerator = new PkceGenerator();
         this._authServerApi = new AuthServerApi(authtConfiguration);
         this._authContextStorage = new AuthContextStorage();
+        this._tokenStorage = new TokenStorage(authtConfiguration.cdsWindow);
     }
 
     public async startAuthentication(): Promise<void> {
@@ -39,9 +42,18 @@ export class AuthService {
     public async endAuthentication(): Promise<string> {
         let authContext = this._authContextStorage
             .get(this._authConfiguration.clientConfiguration.clientId);
-        let result = await this._authServerApi
-            .authorizeGetToken(authContext.pkce.codeVerifier);
+        try {
+            let result = await this._authServerApi
+                .authorizeGetToken(authContext.pkce.codeVerifier);
+            if (!result || !result.access_token) {
+                throw new Error("Token or result is null");
+            }
 
-        return result.access_token;
+            await this._tokenStorage.save(result.access_token);
+            return result.access_token;
+        }
+        finally {
+            this._authContextStorage.clear(authContext.clientId);
+        }
     }
 }
