@@ -1,12 +1,11 @@
 import { Pkce } from "../models/Pkce";
-import { UuidGenerator } from "./UuidGenerator";
-import sjcl = require('sjcl');
+import { CodeChallengeGenerator } from "./CodeChallengeGenerator";
+import { RandomStringGenerator } from "./RandomStringGenerator";
 
 export class PkceGenerator {
     public generate(): Pkce {
-        let codeVerifier = new UuidGenerator().generate();
-        let codeChallengeBytes = sjcl.hash.sha256.hash(codeVerifier);
-        let codeChallenge = String.fromCharCode(...codeChallengeBytes);
+        let codeVerifier = new RandomStringGenerator().generate();
+        let codeChallenge = new CodeChallengeGenerator().generate(codeVerifier);
 
         return new Pkce(codeVerifier, codeChallenge);
     }

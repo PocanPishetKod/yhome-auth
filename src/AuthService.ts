@@ -1,30 +1,32 @@
 import { AuthServerApi } from "./AuthServerApi";
 import { AuthContextStorage } from "./data/AuthContextStorage";
-import { TokenStorage } from "./data/TokenStorage";
+import { ITokenStorage } from "./data/ITokenStorage";
+import { TokenStorageFactory } from "./data/TokenStorageFactory";
 import { PkceGenerator } from "./generators/PkceGenerator";
-import { StateGenerator } from "./generators/StateGenerator";
+import { RandomStringGenerator } from "./generators/RandomStringGenerator";
 import { AuthConfiguration } from "./models/AuthConfiguration";
 import { AuthContext } from "./models/AuthContext";
 
 export class AuthService {
     private readonly _authConfiguration: AuthConfiguration;
-    private readonly _stateGenerator: StateGenerator;
+    private readonly _randomStringGenerator: RandomStringGenerator;
     private readonly _pkceGenerator: PkceGenerator;
     private readonly _authServerApi: AuthServerApi;
     private readonly _authContextStorage: AuthContextStorage;
-    private readonly _tokenStorage: TokenStorage;
+    private readonly _tokenStorage: ITokenStorage;
 
     constructor(authtConfiguration: AuthConfiguration) {
         this._authConfiguration = authtConfiguration;
-        this._stateGenerator = new StateGenerator();
+        this._randomStringGenerator = new RandomStringGenerator();
         this._pkceGenerator = new PkceGenerator();
         this._authServerApi = new AuthServerApi(authtConfiguration);
         this._authContextStorage = new AuthContextStorage();
-        this._tokenStorage = new TokenStorage(authtConfiguration.cdsWindow);
+        this._tokenStorage = new TokenStorageFactory()
+            .create(authtConfiguration.cdsWindow);
     }
 
     public async startAuthentication(): Promise<void> {
-        let state = this._stateGenerator.generate();
+        let state = this._randomStringGenerator.generate();
         let pkce = this._pkceGenerator.generate();
         this._authContextStorage
             .save(new AuthContext(this._authConfiguration.clientConfiguration.clientId,
@@ -39,12 +41,12 @@ export class AuthService {
         }
     }
 
-    public async endAuthentication(): Promise<string> {
+    public async endAuthentication(code: string): Promise<string> {
         let authContext = this._authContextStorage
             .get(this._authConfiguration.clientConfiguration.clientId);
         try {
             let result = await this._authServerApi
-                .authorizeGetToken(authContext.pkce.codeVerifier);
+                .authorizeGetToken(authContext.pkce.codeVerifier, code);
             if (!result || !result.access_token) {
                 throw new Error("Token or result is null");
             }

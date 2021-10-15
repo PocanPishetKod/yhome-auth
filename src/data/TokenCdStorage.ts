@@ -1,6 +1,7 @@
 import {IRequest, IResponse, RequestType } from "yhome-cds-interface";
+import { ITokenStorage } from "./ITokenStorage";
 
-export class TokenStorage {
+export class TokenCdStorage implements ITokenStorage {
     private readonly _cdsWindow: Window;
 
     constructor(cdsWindow: Window) {
