@@ -1,6 +1,6 @@
 export class HttpClient {
     public async get(url: string): Promise<void> {
-        let result = await fetch(url, { credentials: "include" });
+        let result = await fetch(url, { credentials: "same-origin" });
         if (result.redirected) {
             window.location.href = result.url;
         }

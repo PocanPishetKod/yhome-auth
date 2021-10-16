@@ -58,4 +58,8 @@ export class AuthService {
             this._authContextStorage.clear(authContext.clientId);
         }
     }
+
+    public async getToken(): Promise<string> {
+        return await this._tokenStorage.get();
+    }
 }

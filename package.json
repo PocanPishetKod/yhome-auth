@@ -1,6 +1,6 @@
 {
     "name": "yhome-auth",
-    "version": "0.0.15",
+    "version": "1.0.1",
     "description": "Authentication library",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -9,11 +9,10 @@
     ],
     "dependencies": {
         "sjcl": "^1.0.8",
-        "uuid": "^8.3.2"
+        "yhome-cds-interface": "^1.0.3"
     },
     "devDependencies": {
         "@types/sjcl": "^1.0.30",
-        "typescript": "^4.4.3",
-        "yhome-cds-interface": "^1.0.3"
+        "typescript": "^4.4.3"
     }
 }
