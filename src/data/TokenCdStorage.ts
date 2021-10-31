@@ -1,4 +1,5 @@
 import {IRequest, IResponse, RequestType } from "yhome-cds-interface";
+import { ITokenData } from "../models/ITokenData";
 import { ITokenStorage } from "./ITokenStorage";
 
 export class TokenCdStorage implements ITokenStorage {
@@ -8,10 +9,11 @@ export class TokenCdStorage implements ITokenStorage {
         this._cdsWindow = cdsWindow;
     }
 
-    private sendRequest(requestType: RequestType, token?: string): void {
+    private sendRequest(requestType: RequestType, tokenData?: ITokenData): void {
         let request: IRequest = { 
             requestType: requestType,
-            token: token
+            token: tokenData?.accessToken,
+            refreshToken: tokenData?.refreshToken
         };
 
         this._cdsWindow.postMessage(JSON.stringify(request), this._cdsWindow.origin);
@@ -28,24 +30,27 @@ export class TokenCdStorage implements ITokenStorage {
             return;
         }
 
-        resolve(response.token);
+        resolve({ 
+            accessToken: response.token,
+            refreshToken: response.refreshToken
+        } as ITokenData);
     }
 
-    private buildPromise<T>(requestType: RequestType, token?: string): Promise<T> {
+    private buildPromise<T>(requestType: RequestType, tokenData?: ITokenData): Promise<T> {
         return new Promise((resolve, reject) => {
             addEventListener("message", (event: MessageEvent<string>) => {
                 this.handleResponse(event, resolve, reject);
             }, { once: true });
 
-            this.sendRequest(requestType, token);
+            this.sendRequest(requestType, tokenData);
         });
     }
 
-    public save(token: string): Promise<void> {
-        return this.buildPromise(RequestType.Save, token);
+    public save(tokenData: ITokenData): Promise<void> {
+        return this.buildPromise(RequestType.Save, tokenData);
     }
 
-    public get(): Promise<string> {
-        return this.buildPromise<string>(RequestType.Get);
+    public get(): Promise<ITokenData> {
+        return this.buildPromise<ITokenData>(RequestType.Get);
     }
 }

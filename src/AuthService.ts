@@ -51,7 +51,7 @@ export class AuthService {
                 throw new Error("Token or result is null");
             }
 
-            await this._tokenStorage.save(result.access_token);
+            await this._tokenStorage.save({ accessToken: result.access_token, refreshToken: result.refresh_token });
             return result.access_token;
         }
         finally {
@@ -60,6 +60,7 @@ export class AuthService {
     }
 
     public async getToken(): Promise<string> {
-        return await this._tokenStorage.get();
+        let tokenData = await this._tokenStorage.get();
+        return tokenData?.accessToken;
     }
 }

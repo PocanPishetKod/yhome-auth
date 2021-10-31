@@ -1,4 +1,6 @@
+import { ITokenData } from "../models/ITokenData";
+
 export interface ITokenStorage {
-    save(token: string): Promise<void>;
-    get(): Promise<string>;
+    save(tokenData: ITokenData): Promise<void>;
+    get(): Promise<ITokenData>;
 }
